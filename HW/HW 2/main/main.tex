@@ -107,7 +107,7 @@ Professor Mohammad Hossein Rohban
 
 {\color{RedOrange}
 {\Large
-Homework 1:
+Homework 2:
 }\\
 }
 {\color{BrickRed}
@@ -124,9 +124,9 @@ Introduction to RL
 {\color{RoyalPurple} { \small By:} } \\
 \vspace{10pt}
 
-{\color{Blue} { \LARGE [Parsa Ghezelbash] } } \\
+{\color{Blue} { \LARGE Parsa Ghezelbash } } \\
 \vspace{5pt}
-{\color{RoyalBlue} { \Large [401110437] } }
+{\color{RoyalBlue} { \Large 401110437 } }
 
 
 \vspace*{\fill}
@@ -156,38 +156,6 @@ Introduction to RL
 
 {\fontfamily{lmss}\selectfont {\color{DarkBlue}
 
-\subsection*{Grading}
-
-The grading will be based on the following criteria, with a total of 100 points:
-
-\[
-\begin{array}{|l|l|}
-\hline
-\textbf{Task} & \textbf{Points} \\
-\hline
-\text{Task 1: Solving Predefined Environments} & 45 \\
-\text{Task 2: Creating Custom Environments} & 45 \\
-
-\hline
-\text{Clarity and Quality of Code} & 5 \\
-\text{Clarity and Quality of Report} & 5 \\
-\hline
-\text{Bonus 1: Writing a wrapper for a known env} & 10 \\
-\text{Bonus 2: Implementing pygame env } & 20 \\
-\text{Bonus 3: Writing your report in Latex } & 10 \\
-\hline
-\end{array}
-\]
-
-\textbf{Notes:}
-\begin{itemize}
-    \item Include well-commented code and relevant plots in your notebook.
-    \item Clearly present all comparisons and analyses in your report.
-    \item Ensure reproducibility by specifying all dependencies and configurations.
-\end{itemize}
-
-}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newpage
@@ -195,115 +163,64 @@ The grading will be based on the following criteria, with a total of 100 points:
 
 {\fontfamily{lmss}\selectfont {\color{DarkBlue}
 
-\section{Task 1: Solving Predefined Environments [45-points]}
+\section{Epsilon Greedy & N-step Sarsa/Q-learning}
 
-\subsection*{Objective}
-Train reinforcement learning agents to solve predefined Gymnasium environments (\texttt{CartPole-v1} and \texttt{Taxi-v3}) using PPO and DQN algorithms. Custom reward wrappers were implemented to address sparse rewards and improve learning efficiency.
+\textbf{Question:}
 
-\subsection*{Approach}
-\begin{itemize}
-    \item \textbf{Environment Setup}: Used built-in Gymnasium environments with custom reward wrappers.
-    \item \textbf{Reward Engineering}:
-    \begin{itemize}
-        \item Modified rewards to provide dense feedback during training.
-        \item Added penalties for undesirable behaviors (e.g., large pole angles in \texttt{CartPole-v1}, long paths in \texttt{Taxi-v3}).
-    \end{itemize}
-    \item \textbf{Hyperparameter Tuning}: Explored different combinations of learning rates, discount factors, and exploration parameters.
-\end{itemize}
+Epsilon 0.1 initially has a high regret rate but decreases quickly. Why is that?
 
-\subsection*{Implementation}
+\textbf{Answer:}
 
-\subsubsection*{General Framework}
-The following components were implemented for both environments:
-\begin{itemize}
-    \item \texttt{EpisodeTracker}: Tracks episode rewards and lengths.
-    \item \texttt{MetricsCollectorCallback}: Collects training metrics for analysis.
-    \item \texttt{train\_hyperparams}: Trains models with different hyperparameter combinations.
-    \item \texttt{plot\_hyperparam\_results}: Visualizes training progress.
-\end{itemize}
+Epsilon ($\varepsilon$) = 0.1 means the agent explores 10\% of the time and exploits 90\% of the time. Initially, the Q-values are uninformative, so the agent’s policy is essentially random, leading to high regret since it frequently falls off the cliff or takes suboptimal actions.
 
-\subsubsection*{Custom Reward Wrappers}
+\textbf{Question:}
 
-\paragraph*{CartPole-v1}
-\begin{verbatim}
-class CustomRewardWrapper(RewardWrapper):
-    def reward(self, reward):
-        obs = self.env.unwrapped.state
-        if obs is None:
-            obs = self.env.unwrapped._get_obs()
-        pole_angle = obs[2]
-        return reward - 0.1 * abs(pole_angle)
-\end{verbatim}
-\textbf{Modifications}:
-\begin{itemize}
-    \item Added a penalty proportional to the pole angle to discourage large deviations.
-\end{itemize}
+Both epsilon 0.1 and 0.5 show jumps. What is the reason for this?
 
-\paragraph*{Taxi-v3}
-\begin{verbatim}
-class CustomRewardWrapper(RewardWrapper):
-    def reward(self, reward):
-        if self.last_obs is not None:
-            taxi_row, taxi_col, pass_loc, dest_idx = self.env.unwrapped.decode(self.last_obs)
-            distance_penalty = 0.0
-            bonus = 0.0
-            if pass_loc == 4:
-                dest_row, dest_col = self.env.unwrapped.locs[dest_idx]
-                distance = abs(taxi_row - dest_row) + abs(taxi_col - dest_col)
-                distance_penalty = -0.1 * distance
-            if reward == 20:
-                bonus = 2.0
-            return reward + distance_penalty + bonus
-        return reward
-\end{verbatim}
-\textbf{Modifications}:
-\begin{itemize}
-    \item Added a penalty for distance to the destination when carrying the passenger.
-    \item Amplified the reward for successful dropoffs.
-\end{itemize}
+\textbf{Answer:}
 
-\subsection*{Results}
+The jumps in regret are caused by exploratory moves that lead to significantly worse outcomes, especially when the agent falls into the cliff. The higher the epsilon, the more frequently these jumps occur because the agent explores more often and deviates from the optimal path.
 
-\subsubsection*{CartPole-v1}
-\begin{itemize}
-    \item \textbf{Standard Rewards}:
-    \begin{itemize}
-        \item PPO: Achieved a maximum reward of 500 (environment limit).
-        \item DQN: Achieved a maximum reward of 415.
-    \end{itemize}
-    \item \textbf{Modified Rewards}:
-    \begin{itemize}
-        \item PPO: Achieved a maximum reward of 500 (environment limit).
-        \item DQN: Achieved a maximum reward of 498.
-    \end{itemize}
-\end{itemize}
+\textbf{Question:}
 
-\subsubsection*{Taxi-v3}
-\begin{itemize}
-    \item \textbf{Standard Rewards}:
-    \begin{itemize}
-        \item PPO: Achieved a maximum reward of -12.
-        \item DQN: Achieved a maximum reward of -38.
-    \end{itemize}
-    \item \textbf{Modified Rewards}:
-    \begin{itemize}
-        \item PPO: Achieved a maximum reward of -10.3.
-        \item DQN: Achieved a maximum reward of -69.7.
-    \end{itemize}
-\end{itemize}
+Epsilon 0.9 almost changes linearly. Why?
 
-\subsection*{Analysis}
-\begin{itemize}
-    \item \textbf{Custom Rewards}: Improved learning efficiency by providing intermediate feedback.
-    \item \textbf{Hyperparameter Tuning}: Critical for achieving optimal performance.
-    \item \textbf{Algorithm Comparison}: PPO outperformed DQN.
-\end{itemize}
+\textbf{Ansewr:}
+Epsilon ($\varepsilon$) = 0.9 means the agent chooses a random action 90\% of the time and follows the greedy policy only 10\% of the time. This high level of exploration results in near random behavior
+Since the agent is mostly choosing random actions, it does not follow a structured or optimized policy. Instead, it frequently steps into suboptimal states, including falling into the cliff, leading to a steady accumulation of regret over time.
 
-\subsection*{Visualization}
-\begin{itemize}
-    \item Training curves for rewards and episode lengths were plotted for each algorithm and reward configuration.
-    \item Best-performing configurations were compared to identify optimal hyperparameters.
-\end{itemize}
+\textbf{Question:}
+
+Compare the optimal policy for epsilon values 0.1 and 0.9. How do they differ, and why do they
+look different?
+
+\textbf{Answer:}
+
+In the $\varepsilon=0.1$ the optimal policy is to go all the way up and after reaching the top rightmost point going down to reach G but with the $\varepsilon=0.9$ the optimal policy goes through mid level cells to reach the goal and this is due to high exploration this agent had through mid cells of the grid.
+
+\textbf{Question:}
+
+n the epsilon decay section, analyze the optimal policy for the row adjacent to the cliff(lowest row).
+Then, compare the different learned policies and their corresponding rewards.
+
+\textbf{Answer:}
+
+In my experiment all three epsilon decay agents didn't converge to a correct policy.
+
+\textbf{Question:}
+
+What is the difference between Q-learning and sarsa?
+
+\textbf{Answer:}
+
+In sarsa we choose the next state action based on our current policy but in Q-learning we just take the best action based on the Q value learned and doesn't use the agents policy.
+
+\textbf{Question:}
+Compare how different values of n affect each algorithm’s performance separately.
+
+\textbf{Answer:}
+
+In my observation the rewards earned by the agent is more stable and smoother in low n for sarsa and it becomes noisy. But for Q-learning increasing n doesn't destroy or change the reward plot as much it does for sarsa.
 
 }}
 
@@ -313,134 +230,91 @@ class CustomRewardWrapper(RewardWrapper):
 
 {\fontfamily{lmss}\selectfont {\color{DarkBlue}
 
-\section{Task 2: Creating Custom Environments [45-points]}
+\section{DQN vs. DDQN}
 
-\subsection*{Objective}
-Design and train reinforcement learning agents on a custom grid-world environment with obstacles. The goal was to navigate from a start position to a goal while avoiding blocked cells.
+\textbf{It should be said that I used target net to create target Q values in my DQN algorithm too.}
 
-\subsection*{Environment Design}
-\begin{itemize}
-    \item \textbf{State Space}: 2D grid positions (agent and goal) $\rightarrow$ 4D observation.
-    \item \textbf{Action Space}: 4 discrete actions (up, down, left, right).
-    \item \textbf{Rewards}:
-    \begin{itemize}
-        \item Step penalty: $-0.1$ per step.
-        \item Progress bonus: $+0.5 \times (\text{previous distance} - \text{current distance})$.
-        \item Goal reward: $+10$ for reaching the goal.
-    \end{itemize}
-    \item \textbf{Obstacles}: Fixed blocked positions at $(1, 1)$ and $(2, 2)$.
-    \item \textbf{Termination}:
-    \begin{itemize}
-        \item Reaching the goal.
-        \item Exceeding the maximum steps (200).
-    \end{itemize}
-\end{itemize}
+\textbf{Question:}
 
-\subsection*{Implementation}
+Which algorithm performs better and why?
 
-\subsubsection*{Custom Environment Class}
-\begin{verbatim}
-class YourAwesomeEnvironment(gym.Env):
-    def __init__(self) -> None:
-        super().__init__()
-        self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(
-            low=np.array([0, 0]), high=np.array([3, 3]), dtype=int
-        )
-        self.grid_size = 4
-        self.start_pos = (0, 0)
-        self.goal_pos = (3, 3)
-        self.blocked_positions = [(1, 1), (2, 2)]
-        self.state = self.start_pos
-        self.max_steps = 200
-        self.current_steps = 0
-        self.prev_dist = None
+\textbf{Answer:}
 
-    def step(self, action):
-        x, y = self.state
-        if action == 0: x = max(x - 1, 0)
-        elif action == 1: x = min(x + 1, self.grid_size - 1)
-        elif action == 2: y = max(y - 1, 0)
-        elif action == 3: y = min(y + 1, self.grid_size - 1)
+In my experience both models did reach the 500 goal but DDQN performed better in number of successful agents. That is because the targets generated for the deep model are decided by the policy net which is some steps ahead of the target net, this way the target values become better estimation of the real ones.
 
-        if (x, y) in self.blocked_positions:
-            x, y = self.state
+\textbf{Question:}
 
-        self.state = (x, y)
-        terminated = (x, y) == self.goal_pos
-        self.current_steps += 1
-        truncated = self.current_steps >= self.max_steps
+Which algorithm has a tighter upper and lower bound for rewards.
 
-        goal_dist = abs(x - self.goal_pos[0]) + abs(y - self.goal_pos[1])
-        reward = -0.1
-        if self.prev_dist is not None:
-            progress_bonus = 0.5 * (self.prev_dist - goal_dist)
-            reward += progress_bonus
-        if terminated:
-            reward += 10.0
-        self.prev_dist = goal_dist
+\textbf{Answer:}
 
-        return np.array(self.state, dtype=int), reward, terminated, truncated, {}
-\end{verbatim}
+It seems like DDQN has tighter upper and lower bound in it's rewards.
 
-\subsubsection*{Training Setup}
-\begin{itemize}
-    \item \textbf{Algorithms}: PPO and DQN.
-    \item \textbf{Hyperparameters}:
-    \begin{itemize}
-        \item PPO: Default parameters with \texttt{learning\_rate=3e-4}.
-        \item DQN: Default parameters with \texttt{learning\_rate=1e-3}.
-    \end{itemize}
-    \item \textbf{Training Duration}: 30,000 timesteps.
-    \item \textbf{Evaluation}: 100 episodes with deterministic policy.
-\end{itemize}
+\textbf{Question:}
 
-\subsection*{Results}
-\begin{itemize}
-    \item \textbf{PPO}:
-    \begin{itemize}
-        \item Success Rate: \textbf{100\%}.
-        \item Average Episode Length: \textbf{6 steps}.
-    \end{itemize}
-    \item \textbf{DQN}:
-    \begin{itemize}
-        \item Success Rate: \textbf{0\%}.
-        \item Average Episode Length: \textbf{200 steps} (truncation limit).
-    \end{itemize}
-\end{itemize}
+Based on your previous answer, can we conclude that this algorithm exhibits greater stability in learning? Explain your reasoning.
 
-\subsection*{Analysis}
-\begin{itemize}
-    \item \textbf{PPO Performance}:
-    \begin{itemize}
-        \item Learned optimal paths around obstacles.
-        \item Achieved perfect success rate due to effective reward shaping.
-    \end{itemize}
-    \item \textbf{DQN Performance}:
-    \begin{itemize}
-        \item Failed to learn meaningful policies.
-        \item Likely due to insufficient exploration or hyperparameter tuning.
-    \end{itemize}
-    \item \textbf{Reward Shaping}:
-    \begin{itemize}
-        \item Progress bonus encouraged efficient navigation.
-        \item Step penalty prevented infinite loops.
-    \end{itemize}
-\end{itemize}
+\textbf{Answer:}
 
-\subsection*{Visualization}
-\begin{itemize}
-    \item \textbf{Training Curves}:
-    \begin{itemize}
-        \item PPO rewards increased steadily, reaching the maximum.
-        \item DQN rewards remained flat, indicating no learning.
-    \end{itemize}
-    \item \textbf{Agent Paths}:
-    \begin{itemize}
-        \item PPO consistently reached the goal while avoiding obstacles.
-        \item DQN often got stuck or collided with obstacles.
-    \end{itemize}
-\end{itemize}
+Yes. DDQN is more stable in learning and DQN exhibits more fluctuation in rewards.
+
+\textbf{Question:}
+
+What are the general issues with DQN?
+
+\textbf{Answer:}
+
+DQN uses the same network to select and evaluate the next action. This can lead to overestimation of Q-values, causing instability and suboptimal policies.
+
+If the Q-network incorrectly assigns a high Q-value to a bad action, DQN may prioritize this action incorrectly.
+This leads to an unstable and less reliable learning process.
+
+\textbf{Question:}
+
+How can some of these issues be solved? (You may refer to external sources such as research papers
+and blog posts be sure to cite them properly.)
+
+\textbf{Answer:}
+
+The standard $\varepsilon$-greedy exploration strategy may not effectively balance exploration and exploitation, especially in complex environments.
+
+Solution: Integrate Noisy Networks, which add parameterized noise to the network weights, enabling more efficient exploration by allowing the agent to learn which actions to explore.
+
+\textbf{Question:}
+
+Based on the plotted values in the notebook, can the main purpose of DDQN be observed in the
+results?
+
+\textbf{Answer:}
+
+Yes the results of DDQN were quite smoother than DQN.
+
+\textbf{Question:}
+
+The DDQN paper states that different environments influence the algorithm in various ways. Explain
+these characteristics (e.g., complexity, dynamics of the environment) and their impact on DDQNs
+performance. Then, compare them to the CartPole environment. Does CartPole exhibit these
+characteristics or not?
+
+\textbf{Answer:}
+
+In complex environments with large state-action spaces and numerous obstacles, DDQNs may require more training data and time to learn effective policies.
+
+In highly dynamic environments where conditions change rapidly and unpredictably, DDQNs may struggle to adapt, leading to suboptimal performance.
+
+In CartPole The state space is relatively small, typically comprising four variables: cart position, cart velocity, pole angle, and pole angular velocity. The action space is also limited to two actions: applying a force to the left or right. and the environment's dynamics are predictable and do not change over time, providing a stable platform for learning.
+
+The absence of dynamic changes and obstacles means that once the DDQN learns an effective policy, it remains applicable without the need for frequent adjustments.​
+
+\textbf{Question:}
+
+How do you think DQN can be further improved? (This question is for your own analysis, but
+you may refer to external sources such as research papers and blog posts—be sure to cite them
+properly.)
+
+\textbf{Answer:}
+
+This approach integrates multiple improvements—such as DDQN, Dueling DQN, Prioritized Experience Replay, and Noisy Networks—into a single architecture. By combining these methods, Rainbow DQN achieves superior performance compared to using any single enhancement alone.
 
 }}
 
@@ -451,14 +325,19 @@ class YourAwesomeEnvironment(gym.Env):
 
 {\fontfamily{lmss}\selectfont {\color{DarkBlue}
 
-\section{Task 3: Pygame for RL environment [20-points]}
+\begin{thebibliography}{9}
+
+\bibitem{Fortunato2017}
+M. Fortunato, M. Gheshlaghi Azar, B. Piot, J. Menick, I. Osband, A. Graves, V. Mnih, R. Munos, D. Hassabis, O. Pietquin, C. Blundell, and S. Legg, ``Noisy Networks for Exploration,'' 2017. Available online: \url{https://arxiv.org/abs/1706.10295}
+
+\bibitem{Hessel2017}
+M. Hessel, J. Modayil, H. van Hasselt, T. Schaul, G. Ostrovski, W. Dabney, D. Horgan, B. Piot, M. Azar, and D. Silver, ``Rainbow: Combining Improvements in Deep Reinforcement Learning,'' 2017. Available online: \url{https://arxiv.org/abs/1710.02298}
+
+\end{thebibliography}
 
 
 }}
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 \end{document}
-
