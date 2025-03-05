@@ -107,7 +107,7 @@ Professor Mohammad Hossein Rohban
 
 {\color{RedOrange}
 {\Large
-Homework 1:
+Homework 3:
 }\\
 }
 {\color{BrickRed}
@@ -124,9 +124,9 @@ Introduction to RL
 {\color{RoyalPurple} { \small By:} } \\
 \vspace{10pt}
 
-{\color{Blue} { \LARGE [Parsa Ghezelbash] } } \\
+{\color{Blue} { \LARGE Parsa Ghezelbash } } \\
 \vspace{5pt}
-{\color{RoyalBlue} { \Large [401110437] } }
+{\color{RoyalBlue} { \Large 401110437 } }
 
 
 \vspace*{\fill}
@@ -156,38 +156,6 @@ Introduction to RL
 
 {\fontfamily{lmss}\selectfont {\color{DarkBlue}
 
-\subsection*{Grading}
-
-The grading will be based on the following criteria, with a total of 100 points:
-
-\[
-\begin{array}{|l|l|}
-\hline
-\textbf{Task} & \textbf{Points} \\
-\hline
-\text{Task 1: Solving Predefined Environments} & 45 \\
-\text{Task 2: Creating Custom Environments} & 45 \\
-
-\hline
-\text{Clarity and Quality of Code} & 5 \\
-\text{Clarity and Quality of Report} & 5 \\
-\hline
-\text{Bonus 1: Writing a wrapper for a known env} & 10 \\
-\text{Bonus 2: Implementing pygame env } & 20 \\
-\text{Bonus 3: Writing your report in Latex } & 10 \\
-\hline
-\end{array}
-\]
-
-\textbf{Notes:}
-\begin{itemize}
-    \item Include well-commented code and relevant plots in your notebook.
-    \item Clearly present all comparisons and analyses in your report.
-    \item Ensure reproducibility by specifying all dependencies and configurations.
-\end{itemize}
-
-}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newpage
@@ -195,115 +163,45 @@ The grading will be based on the following criteria, with a total of 100 points:
 
 {\fontfamily{lmss}\selectfont {\color{DarkBlue}
 
-\section{Task 1: Solving Predefined Environments [45-points]}
+\section{Task 1: Policy Search: REINFORCE vs. GA}
 
-\subsection*{Objective}
-Train reinforcement learning agents to solve predefined Gymnasium environments (\texttt{CartPole-v1} and \texttt{Taxi-v3}) using PPO and DQN algorithms. Custom reward wrappers were implemented to address sparse rewards and improve learning efficiency.
+\textbf{Question 1:}
 
-\subsection*{Approach}
-\begin{itemize}
-    \item \textbf{Environment Setup}: Used built-in Gymnasium environments with custom reward wrappers.
-    \item \textbf{Reward Engineering}:
-    \begin{itemize}
-        \item Modified rewards to provide dense feedback during training.
-        \item Added penalties for undesirable behaviors (e.g., large pole angles in \texttt{CartPole-v1}, long paths in \texttt{Taxi-v3}).
-    \end{itemize}
-    \item \textbf{Hyperparameter Tuning}: Explored different combinations of learning rates, discount factors, and exploration parameters.
-\end{itemize}
+How do these two methods differ in terms of their effectiveness for solving reinforcement learning tasks?
 
-\subsection*{Implementation}
+\textbf{Answer:}
 
-\subsubsection*{General Framework}
-The following components were implemented for both environments:
-\begin{itemize}
-    \item \texttt{EpisodeTracker}: Tracks episode rewards and lengths.
-    \item \texttt{MetricsCollectorCallback}: Collects training metrics for analysis.
-    \item \texttt{train\_hyperparams}: Trains models with different hyperparameter combinations.
-    \item \texttt{plot\_hyperparam\_results}: Visualizes training progress.
-\end{itemize}
+The REINFORCE algorithm is a policy gradient method that directly optimizes the policy by maximizing the expected reward. Genetic Algorithm is optimization techniques inspired by natural selection. They are effective in solving complex optimization problems, including reinforcement learning tasks, especially when the search space is large and complex.
 
-\subsubsection*{Custom Reward Wrappers}
+REINFORCE algorithm is sample-efficient but has high variance, on the other hand Genetic algorithm is less sample-efficient due to population evaluations.
 
-\paragraph*{CartPole-v1}
-\begin{verbatim}
-class CustomRewardWrapper(RewardWrapper):
-    def reward(self, reward):
-        obs = self.env.unwrapped.state
-        if obs is None:
-            obs = self.env.unwrapped._get_obs()
-        pole_angle = obs[2]
-        return reward - 0.1 * abs(pole_angle)
-\end{verbatim}
-\textbf{Modifications}:
-\begin{itemize}
-    \item Added a penalty proportional to the pole angle to discourage large deviations.
-\end{itemize}
+\textbf{Question 2:}
 
-\paragraph*{Taxi-v3}
-\begin{verbatim}
-class CustomRewardWrapper(RewardWrapper):
-    def reward(self, reward):
-        if self.last_obs is not None:
-            taxi_row, taxi_col, pass_loc, dest_idx = self.env.unwrapped.decode(self.last_obs)
-            distance_penalty = 0.0
-            bonus = 0.0
-            if pass_loc == 4:
-                dest_row, dest_col = self.env.unwrapped.locs[dest_idx]
-                distance = abs(taxi_row - dest_row) + abs(taxi_col - dest_col)
-                distance_penalty = -0.1 * distance
-            if reward == 20:
-                bonus = 2.0
-            return reward + distance_penalty + bonus
-        return reward
-\end{verbatim}
-\textbf{Modifications}:
-\begin{itemize}
-    \item Added a penalty for distance to the destination when carrying the passenger.
-    \item Amplified the reward for successful dropoffs.
-\end{itemize}
+Discuss the key differences in their performance, convergence rates, and stability.
 
-\subsection*{Results}
+\textbf{Answer:}
 
-\subsubsection*{CartPole-v1}
-\begin{itemize}
-    \item \textbf{Standard Rewards}:
-    \begin{itemize}
-        \item PPO: Achieved a maximum reward of 500 (environment limit).
-        \item DQN: Achieved a maximum reward of 415.
-    \end{itemize}
-    \item \textbf{Modified Rewards}:
-    \begin{itemize}
-        \item PPO: Achieved a maximum reward of 500 (environment limit).
-        \item DQN: Achieved a maximum reward of 498.
-    \end{itemize}
-\end{itemize}
+REINFORCE achieves faster initial progress in dense-reward settings but may plateau if gradients become noisy or uninformative.
+GA progresses more slowly but can discover globally optimal policies in complex, non-convex environments.
 
-\subsubsection*{Taxi-v3}
-\begin{itemize}
-    \item \textbf{Standard Rewards}:
-    \begin{itemize}
-        \item PPO: Achieved a maximum reward of -12.
-        \item DQN: Achieved a maximum reward of -38.
-    \end{itemize}
-    \item \textbf{Modified Rewards}:
-    \begin{itemize}
-        \item PPO: Achieved a maximum reward of -10.3.
-        \item DQN: Achieved a maximum reward of -69.7.
-    \end{itemize}
-\end{itemize}
+REINFORCE converges faster when gradients.
+GA converges more slowly due to population-based stochastic search but avoids gradient pitfalls like vanishing/exploding updates.
 
-\subsection*{Analysis}
-\begin{itemize}
-    \item \textbf{Custom Rewards}: Improved learning efficiency by providing intermediate feedback.
-    \item \textbf{Hyperparameter Tuning}: Critical for achieving optimal performance.
-    \item \textbf{Algorithm Comparison}: PPO outperformed DQN.
-\end{itemize}
+REINFORCE is less stable due to high variance in Monte Carlo returns, even with baselines.
+GA is more stable through population diversity, but mutations can introduce noise.
 
-\subsection*{Visualization}
-\begin{itemize}
-    \item Training curves for rewards and episode lengths were plotted for each algorithm and reward configuration.
-    \item Best-performing configurations were compared to identify optimal hyperparameters.
-\end{itemize}
+\textbf{Question 3:}
+
+Additionally, explore how each method handles exploration and exploitation, and suggest situations where
+one might be preferred over the other.
+
+\textbf{Answer:}
+
+REINFORCE uses epsilon-greedy exploration and exploits via policy gradients. Over time, exploration diminishes as ε decays.
+GA explores via mutation and crossover, while exploiting by selecting high-fitness parents.
+
+REINFORCE is better for differentiable policies, dense rewards, and limited compute (e.g., grid worlds with clear paths).
+GA suits non-differentiable systems, sparse/deceptive rewards (e.g., maze navigation with few rewards).
 
 }}
 
@@ -313,152 +211,151 @@ class CustomRewardWrapper(RewardWrapper):
 
 {\fontfamily{lmss}\selectfont {\color{DarkBlue}
 
-\section{Task 2: Creating Custom Environments [45-points]}
+\section{Task 2: REINFORCE: Baseline vs. No Baseline}
 
-\subsection*{Objective}
-Design and train reinforcement learning agents on a custom grid-world environment with obstacles. The goal was to navigate from a start position to a goal while avoiding blocked cells.
 
-\subsection*{Environment Design}
-\begin{itemize}
-    \item \textbf{State Space}: 2D grid positions (agent and goal) $\rightarrow$ 4D observation.
-    \item \textbf{Action Space}: 4 discrete actions (up, down, left, right).
-    \item \textbf{Rewards}:
-    \begin{itemize}
-        \item Step penalty: $-0.1$ per step.
-        \item Progress bonus: $+0.5 \times (\text{previous distance} - \text{current distance})$.
-        \item Goal reward: $+10$ for reaching the goal.
-    \end{itemize}
-    \item \textbf{Obstacles}: Fixed blocked positions at $(1, 1)$ and $(2, 2)$.
-    \item \textbf{Termination}:
-    \begin{itemize}
-        \item Reaching the goal.
-        \item Exceeding the maximum steps (200).
-    \end{itemize}
-\end{itemize}
+\textbf{Question 1:}
 
-\subsection*{Implementation}
+How are the observation and action spaces defined in the CartPole environment?
 
-\subsubsection*{Custom Environment Class}
-\begin{verbatim}
-class YourAwesomeEnvironment(gym.Env):
-    def __init__(self) -> None:
-        super().__init__()
-        self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(
-            low=np.array([0, 0]), high=np.array([3, 3]), dtype=int
-        )
-        self.grid_size = 4
-        self.start_pos = (0, 0)
-        self.goal_pos = (3, 3)
-        self.blocked_positions = [(1, 1), (2, 2)]
-        self.state = self.start_pos
-        self.max_steps = 200
-        self.current_steps = 0
-        self.prev_dist = None
+\textbf{Answer:}
 
-    def step(self, action):
-        x, y = self.state
-        if action == 0: x = max(x - 1, 0)
-        elif action == 1: x = min(x + 1, self.grid_size - 1)
-        elif action == 2: y = max(y - 1, 0)
-        elif action == 3: y = min(y + 1, self.grid_size - 1)
+Observation consists of four scalars horizontal position, velocity, angle and angular velocity of the cart.
 
-        if (x, y) in self.blocked_positions:
-            x, y = self.state
+Action space is only a binary input in which 0 means move left and 1 means move right.
 
-        self.state = (x, y)
-        terminated = (x, y) == self.goal_pos
-        self.current_steps += 1
-        truncated = self.current_steps >= self.max_steps
+\textbf{Question 2:}
 
-        goal_dist = abs(x - self.goal_pos[0]) + abs(y - self.goal_pos[1])
-        reward = -0.1
-        if self.prev_dist is not None:
-            progress_bonus = 0.5 * (self.prev_dist - goal_dist)
-            reward += progress_bonus
-        if terminated:
-            reward += 10.0
-        self.prev_dist = goal_dist
+What is the role of the discount factor (γ) in reinforcement learning, and what happens when γ=0 or
+γ=1?
 
-        return np.array(self.state, dtype=int), reward, terminated, truncated, {}
-\end{verbatim}
+\textbf{Answer:}
 
-\subsubsection*{Training Setup}
-\begin{itemize}
-    \item \textbf{Algorithms}: PPO and DQN.
-    \item \textbf{Hyperparameters}:
-    \begin{itemize}
-        \item PPO: Default parameters with \texttt{learning\_rate=3e-4}.
-        \item DQN: Default parameters with \texttt{learning\_rate=1e-3}.
-    \end{itemize}
-    \item \textbf{Training Duration}: 30,000 timesteps.
-    \item \textbf{Evaluation}: 100 episodes with deterministic policy.
-\end{itemize}
+The discount factor determines the importance of future rewards. It balances immediate versus long-term rewards.
 
-\subsection*{Results}
-\begin{itemize}
-    \item \textbf{PPO}:
-    \begin{itemize}
-        \item Success Rate: \textbf{100\%}.
-        \item Average Episode Length: \textbf{6 steps}.
-    \end{itemize}
-    \item \textbf{DQN}:
-    \begin{itemize}
-        \item Success Rate: \textbf{0\%}.
-        \item Average Episode Length: \textbf{200 steps} (truncation limit).
-    \end{itemize}
-\end{itemize}
+$\gamma=0$: The agent optimizes only immediate rewards and ignores future consequences.
 
-\subsection*{Analysis}
-\begin{itemize}
-    \item \textbf{PPO Performance}:
-    \begin{itemize}
-        \item Learned optimal paths around obstacles.
-        \item Achieved perfect success rate due to effective reward shaping.
-    \end{itemize}
-    \item \textbf{DQN Performance}:
-    \begin{itemize}
-        \item Failed to learn meaningful policies.
-        \item Likely due to insufficient exploration or hyperparameter tuning.
-    \end{itemize}
-    \item \textbf{Reward Shaping}:
-    \begin{itemize}
-        \item Progress bonus encouraged efficient navigation.
-        \item Step penalty prevented infinite loops.
-    \end{itemize}
-\end{itemize}
+$\gamma=1$: The agent values all future rewards equally, which can lead to infinite expected returns in non-episodic environments.
 
-\subsection*{Visualization}
-\begin{itemize}
-    \item \textbf{Training Curves}:
-    \begin{itemize}
-        \item PPO rewards increased steadily, reaching the maximum.
-        \item DQN rewards remained flat, indicating no learning.
-    \end{itemize}
-    \item \textbf{Agent Paths}:
-    \begin{itemize}
-        \item PPO consistently reached the goal while avoiding obstacles.
-        \item DQN often got stuck or collided with obstacles.
-    \end{itemize}
-\end{itemize}
+\textbf{Question 3:}
+
+Why is a baseline introduced in the REINFORCE algorithm, and how does it contribute to training stability?
+
+\textbf{Answer:}
+
+By centering returns around the baseline, updates become less noisy, enabling faster and more stable convergence, and baseline does not bias the gradient.
+
+\textbf{Question 4:}
+
+What are the primary challenges associated with policy gradient methods like REINFORCE?
+
+\textbf{Answer:}
+
+High Variance, Sample Inefficiency and Hyperparameter Sensitivity are key challenges in these mothods.
+
+\textbf{Question 5:}
+
+Based on the results, how does REINFORCE with a baseline compare to REINFORCE without a baseline
+in terms of performance?
+
+\textbf{Answer:}
+
+REINFORCE with baseline Achieves lower variance in gradient and convergence faster with higher average rewards but REINFORCE without baseline leads to less stable performance.
+
+In my observation both methods converged but the solution captured by REINFORCE with baseline is more stable. the solution of REINFORCE without baselie is more likely to diverge if the episodes were longer.
+
+
+\textbf{Question 6:}
+
+Explain how variance affects policy gradient methods, particularly in the context of estimating gradients
+from sampled trajectories.
+
+\textbf{Answer:}
+
+$G_t$ can vary significantly across trajectories due to the compounding effect of rewards over time, and Since the expectation of gradient is estimated using sampled trajectories, high variance can lead to unstable updates and slow convergence.
 
 }}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \newpage
 
 {\fontfamily{lmss}\selectfont {\color{DarkBlue}
 
-\section{Task 3: Pygame for RL environment [20-points]}
+\section{Task 3: REINFORCE in a continuous action space}
 
+\textbf{Question 1:}
 
+How are the observation and action spaces defined in the MountainCarContinuous environment?
+
+\textbf{Answer:}
+
+Observation space contains position and velocity of the Car. And action space the force applied to the car and ranges in [-1, 1].
+
+$S=\{(x,v)∣x∈[−1.2, -0.07],v∈[0.06, 0.07]\}$
+
+$A=\{a∣a∈[−1.0,1.0]\}$
+
+\textbf{Question 2:}
+How could an agent reach the goal in the MountainCarContinuous environment while using the least amount of energy? Explain a scenario describing the agent’s behavior during an episode with most optimal policy.
+
+\textbf{Answer:}
+
+The optimal policy for using least amount of energy is such that the Car pushes to left and then uses gravity to gain momentum and then use a little energy on when it reaches the rightmost point of the valley to reach the goal.
+
+\textbf{Question 3:}
+
+What strategies can be employed to reduce catastrophic forgetting in continuous action space environments like MountainCarContinuous? (Hint: experience replay or target networks)
+
+\textbf{Answer:}
+
+Instead of training on the most recent experiences, an experience replay buffer stores past transitions and samples them randomly for training. This allows the agent to learn from a more diverse set of past experiences.
+
+Using a separate target network prevents rapid updates to the target estimates, which can destabilize learning.
 }}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+\newpage
+
+{\fontfamily{lmss}\selectfont {\color{DarkBlue}
+
+\section{Task 4: Policy Gradient Drawbacks}
+
+\textbf{Question 1:}
+
+Which algorithm performs better in the Frozen Lake environment? Why?
+
+\textbf{Answer:}
+
+In my experience DQN performed better and REINFORCE didn't even converge with any set of hyperparameters I tesetd. I ran a code and tested a wide range of hyperparams and none of them worked.
+
+\textbf{Question 2:}
+
+What challenges does the Frozen Lake environment introduce for reinforcement learning?
+
+\textbf{Answer:}
+
+The most difficult challenge of this environment was thae sparsity of it's reward function. If the agnet doesn't reach the goal it gets zero reward and in the begining of the learning when the agent know nothing and act randomly, it is not likely for it to reach the goal oftenly and learns nothing.
+
+\textbf{Question 3:}
+
+For environments with unlimited interactions and low-cost sampling, which algorithm is
+more suitable?
+
+\textbf{Answer:}
+
+DQN is typically more sample efficient, REINFORCE directly parameterizes and optimizes the policy, which can be advantageous especially in continuous or high-dimensional action spaces and DQN is often easier to stabilize with standard techniques like target networks, replay buffers. 
+
+In this senario since sample efficiency is not important REINFORCE will be a better option.
+
+}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}
-
